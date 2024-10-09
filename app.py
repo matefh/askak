@@ -119,7 +119,6 @@ def format_context(context_chunks):
     return "\n".join(formatted_chunks)
 
 st.set_page_config(page_title="اسأل عمرو خالد | الفهم عن الله ٢")
-
 # Support Arabic text alignment in all components
 support_arabic_text(all=True)
 
@@ -134,6 +133,8 @@ embeddings = OpenAIEmbeddings()
 anthropic = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 # Streamlit UI
+with st.columns([1, 1, 1])[1]:
+    st.image("https://mir-s3-cdn-cf.behance.net/project_modules/1400/0f458a184395847.6551683d6f98a.png")
 st.markdown("# اسأل عمرو خالد | الفهم عن الله ٢")
 
 vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
