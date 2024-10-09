@@ -118,7 +118,7 @@ def format_context(context_chunks):
         formatted_chunks.append(f"- **{title}** ({timestamp}) - \"{content}\"")
     return "\n".join(formatted_chunks)
 
-st.set_page_config(page_title="اسأل عمرو خالد | الفهم عن الله ٢")
+st.set_page_config(page_title="اسأل عمرو خالد | الفهم عن الله ٢", page_icon="https://mir-s3-cdn-cf.behance.net/project_modules/1400/0f458a184395847.6551683d6f98a.png")
 # Support Arabic text alignment in all components
 support_arabic_text(all=True)
 
