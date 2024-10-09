@@ -1,0 +1,10 @@
+streamlit
+langchain
+langchain-community
+openai
+anthropic
+pytube
+youtube-transcript-api
+chromadb
+tiktoken
+streamlit-arabic-support-wrapper
