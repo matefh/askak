@@ -1,3 +1,6 @@
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 import streamlit as st
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
@@ -6,6 +9,7 @@ from langchain.schema import Document
 import re, os, json
 from arabic_support import support_arabic_text
 from dotenv import load_dotenv
+
 load_dotenv()  # Add this at the beginning of your script
 # Function to get answer from Claude
 def get_claude_response(question, context):
