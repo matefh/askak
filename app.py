@@ -118,7 +118,7 @@ def format_context(context_chunks):
         formatted_chunks.append(f"- **{title}** ({timestamp}) - \"{content}\"")
     return "\n".join(formatted_chunks)
 
-st.set_page_config(page_title="اسأل عمرو خالد | الفهم عن الله ٢", page_icon="https://mir-s3-cdn-cf.behance.net/project_modules/1400/0f458a184395847.6551683d6f98a.png")
+st.set_page_config(page_title="اسأل عمرو خالد", page_icon="https://mir-s3-cdn-cf.behance.net/project_modules/1400/0f458a184395847.6551683d6f98a.png")
 # Support Arabic text alignment in all components
 support_arabic_text(all=True)
 
@@ -135,7 +135,7 @@ anthropic = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 # Streamlit UI
 with st.columns([1, 1, 1])[1]:
     st.image("https://mir-s3-cdn-cf.behance.net/project_modules/1400/0f458a184395847.6551683d6f98a.png")
-st.markdown("# اسأل عمرو خالد | الفهم عن الله ٢")
+st.markdown("# اسأل عمرو خالد")
 
 vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
 # Get all documents for the video
@@ -144,9 +144,9 @@ if 'all_docs' not in st.session_state:
 all_docs = st.session_state.all_docs
 
 # Display list of videos in the vector store in a collapsible container
-with st.expander("الفيديوهات", expanded=False):
-    unique_videos = get_unique_videos()
-    sorted_videos = sorted(unique_videos.values(), key=lambda x: x['publish_date'])
+unique_videos = get_unique_videos()
+sorted_videos = sorted(unique_videos.values(), key=lambda x: x['publish_date'])
+with st.expander(f"({len(sorted_videos)}) الفيديوهات", expanded=False):
     for video_info in sorted_videos:
         col1, col2 = st.columns([1, 3])
         with col1:
