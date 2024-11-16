@@ -61,12 +61,15 @@ def get_unique_videos():
 
 def replace_timestamps(answer, videos_dict):
     def timestamp_to_link(match):
-        title, episode_number, start_timestamp = match.groups()
+        title, start_timestamp = match.groups()
         start_seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(start_timestamp.split(':'))))
-        video_url = f"{videos_dict[int(episode_number) - 1]['source']}&t={start_seconds - 5}s"
-        return f"[{title} {episode_number} - {start_timestamp}]({video_url})"
-    print(answer)
-    pattern = r"(\*\*.*?\*\*)\s*\((\d+)\s*-\s*(\d{2}:\d{2}:\d{2})\)"
+        if video_id not in videos_dict:
+            print(f"Warning: video_id {video_id} not found in videos_dict")
+            return f"{title} {start_timestamp}"  # Fallback without link
+        video_url = f"{videos_dict[video_id]['source']}&t={start_seconds - 5}s"
+        return f"[{title} ({start_timestamp})]({video_url})"
+    
+    pattern = r"(\*\*.*?\*\*)\s*\((\d{2}:\d{2}:\d{2})\)"
     replaced_answer = re.sub(pattern, timestamp_to_link, answer)
     return replaced_answer
 
@@ -108,14 +111,14 @@ def format_context(context_chunks):
     formatted_chunks = []
     for chunk in context_chunks:
         data = json.loads(chunk)
-        timestamp = data['timestamp']
+        timestamp = data['timestamp']  # This is in format "episode_number-timestamp"
+        start_seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(timestamp.split(':'))))
         content = data['content']
         title = re.sub(r'#\w+', '', data['episode_title']).strip()
-        # Remove everything before the first '|' in the title
-        # title_parts = title.split('|')
-        # if len(title_parts) > 1:
-        #     title = '|'.join(title_parts[1:]).strip()
-        formatted_chunks.append(f"- **{title}** ({timestamp}) - \"{content}\"")
+        video_id = data.get('video_id', '')
+        video_url = f"{videos_dict[video_id]['source']}&t={start_seconds - 5}s"
+        formatted_title = f"[**{title}** @ ({timestamp})]({video_url})"
+        formatted_chunks.append(f"- {formatted_title}\n\n  \"{content}\"")
     return "\n".join(formatted_chunks)
 
 st.set_page_config(page_title="اسأل عمرو خالد", page_icon="https://mir-s3-cdn-cf.behance.net/project_modules/1400/0f458a184395847.6551683d6f98a.png")
@@ -146,6 +149,8 @@ all_docs = st.session_state.all_docs
 # Display list of videos in the vector store in a collapsible container
 unique_videos = get_unique_videos()
 sorted_videos = sorted(unique_videos.values(), key=lambda x: x['publish_date'])
+videos_dict = {video['video_id']: video for video in sorted_videos}
+
 with st.expander(f"({len(sorted_videos)}) الفيديوهات", expanded=False):
     for video_info in sorted_videos:
         col1, col2 = st.columns([1, 3])
@@ -163,19 +168,22 @@ if question:
     # Get relevant documents
 # Load the persisted vector store
     relevant_docs = vectorstore.similarity_search(question, k=5)
-    
+
     if relevant_docs:
         # Combine the content of relevant documents and their surrounding context
         context_chunks = []
         for doc in relevant_docs:
             surrounding_docs = [doc]#get_surrounding_context(doc, all_docs)
             for d in surrounding_docs:
-                episode_number = int(d.metadata.get('episode_number', -1) + 1)
+                # episode_number = int(d.metadata.get('episode_number', -1) + 1)
                 start_timestamp = d.metadata.get('start_timestamp', 'Unknown')
                 episode_title = d.metadata.get('title', 'Unknown')
                 content = d.page_content
+                doc_id = d.metadata.get('id', 'Unknown')
+                video_id = d.metadata.get('video_id', 'Unknown')
                 context_chunks.append(json.dumps({
-                    "timestamp": f"{episode_number}-{start_timestamp}",
+                    "video_id": video_id,
+                    "timestamp": start_timestamp,
                     "content": content,
                     "episode_title": episode_title
                 }))
@@ -185,11 +193,8 @@ if question:
 
         # answer = get_claude_response(question, context)
         # st.write(answer)
-        videos_dict = {int(video['episode_number']): video for video in sorted_videos}
-        answer = replace_timestamps(context, videos_dict)
-
-        # Display answer
-        st.markdown(answer)
+                # Display answer
+        st.markdown(context, unsafe_allow_html=True)
 
         # Display relevant video info
         # st.subheader("Relevant Video Segments:")
@@ -230,11 +235,3 @@ if question:
 # Add a footer with information about the app
 st.markdown("---")
 
-def format_context(context_chunks):
-    formatted_chunks = []
-    for chunk in context_chunks:
-        data = json.loads(chunk)
-        timestamp = data['timestamp']
-        content = data['content']
-        formatted_chunks.append(f"- {content} ({timestamp})")
-    return "\n".join(formatted_chunks)
