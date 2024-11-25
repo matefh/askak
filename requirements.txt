@@ -17,3 +17,4 @@ httplib2
 certifi
 isodate
 requests
+yt-dlp
