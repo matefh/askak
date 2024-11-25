@@ -92,7 +92,7 @@ def get_video_metadata(video_id, max_retries=3):
 
             return {
                 'title': snippet['title'],
-                'description': snippet['description'],
+                # 'description': snippet['description'],
                 'publish_date': datetime.strptime(
                     snippet['publishedAt'], 
                     '%Y-%m-%dT%H:%M:%SZ'
@@ -145,7 +145,7 @@ def process_video(video_url, episode_number):
             print(f"Using fallback metadata for video {video_id}")
             video_info = {
                 'title': "Unknown",
-                'description': "No description",
+                # 'description': "No description",
                 'publish_date': "Unknown",
                 'thumbnail_url': f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
                 'length': 0,
@@ -258,7 +258,7 @@ def process_video_without_captions(video_url, episode_number):
             print(f"Using fallback metadata for video {video_id}")
             video_info = {
                 'title': "Unknown",
-                'description': "No description",
+                # 'description': "No description",
                 'publish_date': "Unknown",
                 'thumbnail_url': f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
                 'length': 0,
