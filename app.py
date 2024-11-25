@@ -59,19 +59,19 @@ def get_unique_videos():
             unique_videos[video_id] = metadata.copy()
     return unique_videos
 
-def replace_timestamps(answer, videos_dict):
-    def timestamp_to_link(match):
-        title, start_timestamp = match.groups()
-        start_seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(start_timestamp.split(':'))))
-        if video_id not in videos_dict:
-            print(f"Warning: video_id {video_id} not found in videos_dict")
-            return f"{title} {start_timestamp}"  # Fallback without link
-        video_url = f"{videos_dict[video_id]['source']}&t={start_seconds - 5}s"
-        return f"[{title} ({start_timestamp})]({video_url})"
+# def replace_timestamps(answer, videos_dict):
+#     def timestamp_to_link(match):
+#         title, start_timestamp = match.groups()
+#         start_seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(start_timestamp.split(':'))))
+#         if video_id not in videos_dict:
+#             print(f"Warning: video_id {video_id} not found in videos_dict")
+#             return f"{title} {start_timestamp}"  # Fallback without link
+#         video_url = f"{videos_dict[video_id]['source']}&t={start_seconds - 5}s"
+#         return f"[{title} ({start_timestamp})]({video_url})"
     
-    pattern = r"(\*\*.*?\*\*)\s*\((\d{2}:\d{2}:\d{2})\)"
-    replaced_answer = re.sub(pattern, timestamp_to_link, answer)
-    return replaced_answer
+#     pattern = r"(\*\*.*?\*\*)\s*\((\d{2}:\d{2}:\d{2})\)"
+#     replaced_answer = re.sub(pattern, timestamp_to_link, answer)
+#     return replaced_answer
 
 # Function to get surrounding context
 def get_surrounding_context(doc, all_docs):
@@ -111,8 +111,13 @@ def format_context(context_chunks):
     formatted_chunks = []
     for chunk in context_chunks:
         data = json.loads(chunk)
-        timestamp = data['timestamp']  # This is in format "episode_number-timestamp"
-        start_seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(timestamp.split(':'))))
+        # st.write(data)
+        timestamp = data['timestamp']
+        if type(timestamp) == str:
+            start_seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(timestamp.split(':'))))
+        else:
+            start_seconds = timestamp
+            timestamp = f"{int(timestamp//3600):02d}:{int((timestamp%3600)//60):02d}:{int(timestamp%60):02d}"
         content = data['content']
         title = re.sub(r'#\w+', '', data['episode_title']).strip()
         video_id = data.get('video_id', '')
@@ -175,7 +180,7 @@ if question:
         for doc in relevant_docs:
             surrounding_docs = [doc]#get_surrounding_context(doc, all_docs)
             for d in surrounding_docs:
-                # episode_number = int(d.metadata.get('episode_number', -1) + 1)
+                episode_number = int(d.metadata.get('episode_number', -1) + 1)
                 start_timestamp = d.metadata.get('start_timestamp', 'Unknown')
                 episode_title = d.metadata.get('title', 'Unknown')
                 content = d.page_content
